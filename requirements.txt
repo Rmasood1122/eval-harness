@@ -1,0 +1,7 @@
+pydantic>=2.5
+PyYAML>=6.0
+pytest>=8.0
+hypothesis>=6.90
+
+# Judge layer (optional but recommended for real projects):
+# deepeval>=3.0

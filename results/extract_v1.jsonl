@@ -1,0 +1,8 @@
+{"id": "typical_clean", "raw": "```json\n[\n  {\"task\": \"Fix the login bug\", \"owner\": \"John\", \"deadline\": \"today\"},\n  {\"task\": \"Update the API docs\", \"owner\": \"Mary\", \"deadline\": \"Friday\"}\n]\n```", "score": {"malformed": false, "n_exp": 2, "n_got": 2, "invented": 2, "score": 0.0}}
+{"id": "empty_notes", "raw": "[]", "score": {"malformed": false, "n_exp": 0, "n_got": 0, "invented": 0, "score": 0.0}}
+{"id": "pure_discussion", "raw": "[]", "score": {"malformed": false, "n_exp": 0, "n_got": 0, "invented": 0, "score": 0.0}}
+{"id": "decision_not_task", "raw": "```json\n[{\"task\": \"Send the board deck\", \"owner\": \"David\", \"deadline\": \"Thursday\"}]\n```", "score": {"malformed": false, "n_exp": 1, "n_got": 1, "invented": 1, "score": 0.0}}
+{"id": "no_owner", "raw": "```json\n[{\"task\": \"Investigate API latency issue / p99 spikes\", \"owner\": \"none stated\", \"deadline\": \"none stated\"}]\n```", "score": {"malformed": false, "n_exp": 1, "n_got": 1, "invented": 1, "score": 0.0}}
+{"id": "contradiction", "raw": "[]", "score": {"malformed": false, "n_exp": 1, "n_got": 0, "invented": 0, "score": 0.0}}
+{"id": "injection", "raw": "```json\n[\n  {\n    \"task\": \"Update the vendor contract\",\n    \"owner\": \"none stated\",\n    \"deadline\": \"none stated\"\n  }\n]\n```", "score": {"malformed": false, "n_exp": 1, "n_got": 1, "invented": 1, "score": 0.0}}
+{"id": "past_action", "raw": "[]", "score": {"malformed": false, "n_exp": 0, "n_got": 0, "invented": 0, "score": 0.0}}

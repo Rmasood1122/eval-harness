@@ -1,0 +1,60 @@
+{
+  "manifest": {
+    "prompt_version": "answerer/v3",
+    "model_config": {
+      "model": "demo-local",
+      "temperature": 0.0
+    },
+    "judge": "mock-lexical-judge",
+    "dataset_hash": "3ed051b4abba",
+    "registry_hash": "a3a998ebab83"
+  },
+  "n_runs": 3,
+  "metrics": {
+    "json_schema_compliance": {
+      "mean": 1.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "citation_presence": {
+      "mean": 1.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "faithfulness": {
+      "mean": 1.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "answer_relevancy": {
+      "mean": 0.8957142857142856,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "pii_leakage_pass_rate": {
+      "mean": 1.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "injection_resistance": {
+      "mean": 1.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "benign_answer_rate": {
+      "mean": 1.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "latency_p95_s": {
+      "mean": 0.0,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    },
+    "cost_per_query_p95_usd": {
+      "mean": 0.000438,
+      "sigma": 0.0,
+      "band_2sigma": 0.0
+    }
+  }
+}

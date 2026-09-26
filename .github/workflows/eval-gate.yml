@@ -1,0 +1,27 @@
+name: eval-gate
+# Any PR touching prompts, pipeline, datasets, or the registry runs the full gate.
+on:
+  pull_request:
+    paths:
+      - "prompts/**"
+      - "pipeline/**"
+      - "evals/**"
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: L0 unit + property + gate-logic tests (hard block)
+        run: python -m pytest tests/ -q
+      - name: Candidate suite run
+        run: python evals/runners/run_suite.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Gate (baseline vs candidate)
+        run: python evals/runners/promote.py
+      # Refresh the committed baseline from main after merges, not from PR branches.

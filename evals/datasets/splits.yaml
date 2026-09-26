@@ -1,0 +1,8 @@
+# dev = iterate prompts against; holdout = release gate ONLY.
+# Tuning against holdout = overfitting your prompt to your test.
+goldens/example/v1.jsonl:
+  dev: [g01, g02, g03, g06]
+  holdout: [g04, g05]
+adversarial/safety_v1.jsonl:
+  dev: [a01, b01, m01]
+  holdout: [a02, a03, b02]
