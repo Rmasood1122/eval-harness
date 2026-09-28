@@ -1,14 +1,36 @@
-"""CLI gate: exit 0 = PROMOTE, exit 1 = BLOCK. Wire this into CI."""
+"""CLI gate: exit 0 = PROMOTE, exit 1 = BLOCK, exit 2 = bad input. Wire into CI.
+
+Candidate shapes accepted (contract-fork fix, consumer0_eval_spec FM-01):
+  1. {"scores": {"<metric>": <number>, ...}, ...}   — harness run_suite shape
+  2. {"<metric>": <number>, ...}                    — flat consumer-adapter shape
+     (e.g. AppealForge scripts/eval_adapter.py; non-metric numeric denominators
+     like cases_total are ignored by decide() since they're not in the registry)
+Anything else fails loudly with exit 2 — never a bare KeyError.
+"""
 from __future__ import annotations
 
 import argparse
 import json
+import numbers
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from evals.runners.compare import decide           # noqa: E402
 from evals.runners.harness import ROOT, load_registry  # noqa: E402
+
+
+def extract_scores(raw: object, source: str) -> dict:
+    """Accept both candidate shapes; reject everything else loudly."""
+    if isinstance(raw, dict) and isinstance(raw.get("scores"), dict):
+        return raw["scores"]
+    if (isinstance(raw, dict) and raw
+            and all(isinstance(v, numbers.Real) for v in raw.values())):
+        return raw  # flat consumer-adapter shape
+    raise ValueError(
+        f"{source}: candidate must be {{'scores': {{...}}}} or a flat "
+        f"{{metric: number}} object; got {type(raw).__name__}"
+    )
 
 
 def main() -> int:
@@ -25,8 +47,13 @@ def main() -> int:
         print("WARNING: no baseline found — gating on thresholds only. "
               "Run baseline.py before trusting this gate.")
 
-    candidate = json.loads(Path(args.candidate).read_text())
-    decision, verdicts = decide(load_registry(), candidate["scores"], baseline)
+    raw = json.loads(Path(args.candidate).read_text())
+    try:
+        scores = extract_scores(raw, args.candidate)
+    except ValueError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 2
+    decision, verdicts = decide(load_registry(), scores, baseline)
 
     w = max(len(v.metric) for v in verdicts)
     print(f"\n{'metric'.ljust(w)}  {'block':6} {'cand':>8} {'base':>8} {'band':>7}  status  reason")
