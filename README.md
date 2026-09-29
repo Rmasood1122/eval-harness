@@ -1,8 +1,66 @@
 # eval-harness
 
-Production LLM eval system implementing `EVAL_SYSTEM_PLAYBOOK.md` (L0–L7).
-Framework-agnostic core: the registry → baseline → compare → promote gate is plain
-Python + YAML + JSONL. DeepEval plugs in as the judge layer; swap it without touching gates.
+**A release gate for LLM systems that refused to trust its own maker.**
+
+This repo is a fail-closed eval framework — registry → baseline → compare →
+promote gate, plain Python + YAML + JSONL — governed by `conductor/`, a CLI
+that enforces a 27-step eval build method and refuses to advance without
+evidence. When the method was pointed at the harness itself, the audit trail
+caught its own author cutting corners:
+
+- **Fake evidence, three times.** Steps were "closed" on a literal
+  `<PASTE-REAL-RUN-ID>` placeholder, then on pasted command-block text
+  (twice). The evidence gate was hardened in three rounds until CI evidence
+  must match a real `https://github.com/.+/actions/runs/\d+` URL. Every
+  caught fake is preserved in `evals/conductor_state.json` as a
+  caught-and-voided entry — **the audit trail is the feature.**
+- **A gate that couldn't say no to NaN.** `NaN` compares `False` against every
+  threshold, so a NaN score PASSed both the breach and regression checks
+  silently. Now any non-finite or non-numeric score BLOCKs, even on
+  monitor-only rows (`tests/test_l0_gate.py`).
+- **Five green CI runs that had never happened.** The workflow was PR-only and
+  had never fired; the first five runs were failures nobody had looked at.
+  The workflow now fires on every push and every step of it is
+  release-blocking, including `conductor audit`.
+- **A fresh-checkout crash** the maintainer's own machine hid (missing
+  `mkdir` for a gitignored reports dir) — found by the self-eval, fixed
+  before any consumer hit it.
+
+Every hard gate in the registry has a **demonstrated BLOCK**: one fixture per
+hard metric in `evals/fixtures/block/` trips exactly its own row (including
+the `lower_better` latency construction), with CLI exit-code round-trips in
+CI. A gate that has never been seen to fire is eval theater.
+
+## What's enforced
+
+| Guarantee | Mechanism |
+|---|---|
+| A red gate can't quietly turn green | registry schema lint (`registry_lint.py`): enum-checked direction/blocking/level/method, no unknown keys, fail-closed in `load_registry()` and CI |
+| No candidate is gated against a stale/demo baseline | manifest match in `promote.py`: `registry_hash` + `dataset_hash` must equal the baseline's or the run BLOCKs "stale baseline" |
+| Invalid measurements never pass | NaN / inf / non-numeric score → BLOCK; missing metric → BLOCK |
+| Every hard gate can actually fire | per-metric BLOCK fixtures + healthy control, exit 0/1 proven in CI |
+| Progress claims require proof | `conductor check` demands CI-run evidence; `conductor audit` gates the repo like any other test |
+
+Honest limits, kept honest in tests: flipping a direction to the *other valid*
+enum passes schema lint (that's a diff-justification lint, still to build), and
+judge metrics fall back to a clearly-labeled lexical MockJudge without an API
+key — MockJudge-backed rows must never be trusted as real gates.
+
+## Quickstart
+
+```bash
+make install        # deps
+make test           # L0: unit + property + gate-logic + conductor tests (96 tests)
+make lint-registry  # IE-06: registry schema lint
+make baseline       # run suite 3x -> mean + 2σ noise bands -> evals/baselines/baseline.json
+make suite          # one candidate run -> evals/reports/candidate.json
+make gate           # candidate vs baseline -> PROMOTE (exit 0) / BLOCK (exit 1)
+make demo-block     # degraded pipeline (hallucination injected) -> watch the gate BLOCK
+```
+
+No API key needed for the demo. With `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` +
+`pip install deepeval`, `runners/judge.py` uses real G-Eval judges from the
+frozen prompts in `evals/judges/`.
 
 ## Stack (and why)
 
@@ -12,50 +70,43 @@ Python + YAML + JSONL. DeepEval plugs in as the judge layer; swap it without tou
 | Schemas | Pydantic v2 | deterministic structured-output validation |
 | Judge metrics | DeepEval (optional extra) | G-Eval, RAG triad, pytest-native, most-adopted OSS framework |
 | Registry & gates | this repo (plain YAML/JSON) | vendor-independent — the gate logic is the asset |
+| Governance | `conductor/` CLI + committed state | evidence-gated progress; the ledger ships with the code |
 | Tracing (online) | OTel-compatible hooks (`online/tracing.py`) | works with Langfuse/LangSmith/Confident AI |
-| CI | GitHub Actions (`.github/workflows/eval-gate.yml`) | any PR touching prompts/pipeline runs the gate |
-
-## Quickstart
-
-```bash
-make install        # deps
-make test           # L0: unit + property + gate-logic tests (hard block)
-make baseline       # run suite 3x -> mean + 2σ noise bands -> evals/baselines/baseline.json
-make suite          # one candidate run -> evals/reports/candidate.json
-make gate           # compare candidate vs baseline -> PROMOTE (exit 0) / BLOCK (exit 1)
-make demo-block     # degraded pipeline (hallucination injected) -> watch the gate BLOCK
-```
-
-No API key needed to run the demo: judge metrics fall back to a clearly-labeled
-lexical MockJudge. With `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` + `pip install deepeval`,
-`runners/judge.py` uses real G-Eval judges from the frozen prompts in `evals/judges/`.
+| CI | GitHub Actions (`.github/workflows/eval-gate.yml`) | every push runs lint + tests + suite + gate + audit, all release-blocking |
 
 ## Layout
 
 ```
 pipeline/app.py                 # system under test (demo RAG answerer; replace with yours)
+conductor/                      # the 27-step build method as an enforcing CLI
 evals/
+  conductor_state.json          # the ledger — including every caught-and-voided fake
   metrics/registry.yaml         # single source of truth: thresholds, bands, blocking modes
-  datasets/goldens/example/v1.jsonl
-  datasets/adversarial/safety_v1.jsonl   # adversarial + benign + mixed (over-refusal covered)
-  datasets/splits.yaml
+  fixtures/block/               # one BLOCK fixture per hard registry row + healthy control
+  datasets/goldens/  datasets/adversarial/   # incl. benign controls (over-refusal covered)
   judges/faithfulness/v1.md     # frozen, versioned judge prompt (G-Eval style)
   runners/
     harness.py                  # loads registry+datasets, runs pipeline, scores, manifests
-    metrics_impl.py             # deterministic metrics + judge adapter dispatch
-    judge.py                    # real judge (DeepEval/API) or MockJudge fallback
-    baseline.py  run_suite.py  compare.py  promote.py
-  baselines/  reports/
-  online/tracing.py             # non-blocking logging + PII masking at write time
-  online/eval_online.py         # stratified sampling poller (reference-free metrics only)
-tests/                          # L0: parsers, PII detector, gate logic (Hypothesis)
+    registry_lint.py            # IE-06 schema lint (fail-closed)
+    compare.py  promote.py      # gate logic; NaN->BLOCK; manifest match
+    baseline.py  run_suite.py  metrics_impl.py  judge.py
+  online/                       # non-blocking tracing + PII masking; stratified sampling poller
+tests/                          # 96 L0 tests: parsers, PII, gate branches, fixtures, conductor
+docs/                           # the method: playbook, 27-step toolmap, architect prompts
 ```
 
 ## Adopting on a real project
 
 1. Replace `pipeline/app.py` with a thin wrapper around your system.
-2. Run the Meta Eval Architect prompt on your project brief → paste its registry rows
-   into `registry.yaml`, its datasets into `datasets/`.
-3. Hand-label 30–50 cases; validate every judge (≥85% agreement) before trusting gates.
-4. `make baseline` on main; wire `eval-gate.yml` into CI. Never edit thresholds to make
-   a red gate green — that decision belongs in a PR review.
+2. Run the Meta Eval Architect prompt (`docs/`) on your project brief → paste
+   its registry rows into `registry.yaml`, its datasets into `datasets/`.
+3. Hand-label 30–50 cases; validate every judge (≥85% agreement) before
+   trusting gates.
+4. `make baseline` on main; wire `eval-gate.yml` into CI. Never edit
+   thresholds to make a red gate green — that decision belongs in a PR review.
+5. `python conductor/conductor.py init --project NAME --archetype A2` and let
+   the ledger govern the build.
+
+## License
+
+MIT — see `LICENSE`.
