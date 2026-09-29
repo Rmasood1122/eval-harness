@@ -38,20 +38,20 @@
       "t": "T01",
       "name": "Unit/function floor",
       "disposition": "applied",
-      "status": "pending",
+      "status": "done",
       "trigger_or_justification": null,
-      "evidence": null,
-      "closed": null
+      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36559475953",
+      "closed": "2026-09-29"
     },
     {
       "step": 4,
       "t": "T12",
       "name": "Property-based invariants",
       "disposition": "applied",
-      "status": "pending",
+      "status": "done",
       "trigger_or_justification": null,
-      "evidence": null,
-      "closed": null
+      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36559475953 \u2014 Hypothesis properties in tests/test_l0_parsers.py",
+      "closed": "2026-09-29"
     },
     {
       "step": 5,
@@ -381,6 +381,18 @@
       "step": 3,
       "evidence": "",
       "note": "REOPENED (was: cd ~/eval-harnessEV=$(powershell.exe -command Get-Clipboard | tr -d '\\r\\n')echo \"evidence from clipboard: $EV\"python conductor/conductor.py reopen 3 --reason \"closed with step-4 text via verbatim paste chain\" \\&& python conductor/conductor.py check --evidence \"$EV\" \\&& python conductor/conductor.py check --evidence \"$EV - Hypothesis properties in tests/test_l0_parsers.py\" \\&& python conductor/conductor.py status \\&& git add evals/conductor_state.json \\&& git commit -m \"conductor: steps 3-4 closed on verified green CI run\" \\&& git push) pasted command text"
+    },
+    {
+      "date": "2026-09-29",
+      "step": 3,
+      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36559475953",
+      "note": ""
+    },
+    {
+      "date": "2026-09-29",
+      "step": 4,
+      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36559475953 \u2014 Hypothesis properties in tests/test_l0_parsers.py",
+      "note": ""
     }
   ]
 }
