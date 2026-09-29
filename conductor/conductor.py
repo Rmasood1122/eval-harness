@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -168,10 +169,12 @@ def cmd_check(args: argparse.Namespace) -> int:
     ev = (args.evidence or "").strip()
     if not ev or "..." in ev or "NNN" in ev or "<" in ev or ">" in ev or ev.lower() in ("todo", "tbd", "done"):
         sys.exit("REFUSED (D2): evidence or it didn't happen — pass --evidence with the artifact (CI run URL, file path, hash set, label export).")
+    if len(ev) > 300:
+        sys.exit("REFUSED (D2): evidence is suspiciously long — looks like pasted command text, not an artifact reference.")
     kind = corpus_by_step(load_steps())[cur["step"]]["evidence_kind"]
-    if kind == "ci" and not any(tok in ev.lower() for tok in ("run", "action", "://", "#", "job")):
-        sys.exit(f"REFUSED (D2): step {cur['step']} closes on CI evidence — a run URL/id, not '{ev}'. "
-                 "Local output is necessary, not sufficient (the AF lesson).")
+    if kind == "ci" and not re.search(r"https://github\.com/\S+/actions/runs/\d+", ev):
+        sys.exit(f"REFUSED (D2): step {cur['step']} closes only on a real Actions run URL "
+                 "(https://github.com/<owner>/<repo>/actions/runs/<id>).")
     # D1: no post-week-one step closes while a week-one applied step is open
     w1 = week_one_set(state)
     if cur["step"] not in w1:

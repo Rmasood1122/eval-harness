@@ -12,6 +12,7 @@ from evals.runners.harness import ROOT, run_suite  # noqa: E402
 def main() -> None:
     out = sys.argv[1] if len(sys.argv) > 1 else str(ROOT / "evals/reports/candidate.json")
     result = run_suite()
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
     Path(out).write_text(json.dumps(result, indent=2))
     print(json.dumps(result["scores"], indent=2))
     print(f"\ncandidate written -> {out}")

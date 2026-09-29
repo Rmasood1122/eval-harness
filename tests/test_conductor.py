@@ -32,9 +32,9 @@ def state(tmp: Path) -> dict:
 
 def close_week_one(tmp: Path) -> None:
     """Close steps 1-6 with kind-appropriate evidence."""
-    ev = {1: "fm_list.md", 2: "local run: DECISION table", 3: "ci run #1",
-          4: "hypothesis run green", 5: "ci run #2 degraded fixture exit 1",
-          6: "ci run #3 roundtrips"}
+    ev = {1: "fm_list.md", 2: "local run: DECISION table", 3: "https://github.com/x/y/actions/runs/101",
+          4: "hypothesis run green", 5: "https://github.com/x/y/actions/runs/102 degraded exit 1",
+          6: "https://github.com/x/y/actions/runs/103"}
     for n in (1, 2, 3, 4, 5, 6):
         proc = run(tmp, "check", "--evidence", ev[n])
         assert proc.returncode == 0, f"step {n}: {proc.stderr}{proc.stdout}"
@@ -81,7 +81,7 @@ def test_ci_step_rejects_local_only_evidence(tmp_path: Path) -> None:
     # step 3 is ci-kind: "8 passed locally" has no run/url/id token -> refused
     proc = run(tmp_path, "check", "--evidence", "8 passed locally")
     assert proc.returncode != 0
-    assert "necessary, not sufficient" in proc.stderr
+    assert "Actions run URL" in proc.stderr
 
 
 # ---- D8: sequence ----
@@ -117,7 +117,7 @@ def test_a3_week_one_ordering_no_deadlock(tmp_path: Path) -> None:
     close_week_one(tmp_path)
     out = run(tmp_path, "guide").stdout
     assert "STEP 17" in out            # agentic next, not step 7
-    assert run(tmp_path, "check", "--evidence", "ci run #4 pass^k").returncode == 0
+    assert run(tmp_path, "check", "--evidence", "https://github.com/x/y/actions/runs/104 pass^k").returncode == 0
     assert "STEP 7" in run(tmp_path, "guide").stdout
 
 
@@ -177,3 +177,16 @@ def test_reopen_voids_evidence_and_logs(tmp_path: Path) -> None:
     row = next(r for r in s["steps"] if r["step"] == 1)
     assert row["status"] == "pending" and row["evidence"] is None
     assert any("REOPENED" in e.get("note", "") for e in s["log"])
+
+
+
+def test_ci_evidence_requires_real_runs_url(tmp_path: Path) -> None:
+    init(tmp_path)
+    for ev in ("fm_list.md", "local run: DECISION table"):
+        assert run(tmp_path, "check", "--evidence", ev).returncode == 0
+    assert run(tmp_path, "check", "--evidence", "we run things in github actions #5").returncode != 0
+
+
+def test_overlong_pasted_command_evidence_refused(tmp_path: Path) -> None:
+    init(tmp_path)
+    assert run(tmp_path, "check", "--evidence", "cd repo && python x.py " * 20).returncode != 0
