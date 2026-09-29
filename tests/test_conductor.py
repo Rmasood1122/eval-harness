@@ -161,3 +161,19 @@ def test_audit_blocks_week_one_bypass(tmp_path: Path) -> None:
     proc = run(tmp_path, "audit")
     assert proc.returncode == 1
     assert "D1" in proc.stdout
+
+
+def test_angle_bracket_placeholder_refused(tmp_path: Path) -> None:
+    init(tmp_path)
+    proc = run(tmp_path, "check", "--evidence", "<PASTE-REAL-RUN-ID>")
+    assert proc.returncode != 0
+
+
+def test_reopen_voids_evidence_and_logs(tmp_path: Path) -> None:
+    init(tmp_path)
+    assert run(tmp_path, "check", "--evidence", "fm_list.md").returncode == 0
+    assert run(tmp_path, "reopen", "1", "--reason", "evidence was placeholder").returncode == 0
+    s = state(tmp_path)
+    row = next(r for r in s["steps"] if r["step"] == 1)
+    assert row["status"] == "pending" and row["evidence"] is None
+    assert any("REOPENED" in e.get("note", "") for e in s["log"])

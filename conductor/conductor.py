@@ -166,7 +166,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         sys.exit(f"REFUSED (D8 sequence): current step is {cur['step']} ({cur['name']}); "
                  f"step {args.step} cannot be closed before it. Use defer/na with a reason if it truly does not apply.")
     ev = (args.evidence or "").strip()
-    if not ev or "..." in ev or "NNN" in ev or ev.lower() in ("todo", "tbd", "done"):
+    if not ev or "..." in ev or "NNN" in ev or "<" in ev or ">" in ev or ev.lower() in ("todo", "tbd", "done"):
         sys.exit("REFUSED (D2): evidence or it didn't happen — pass --evidence with the artifact (CI run URL, file path, hash set, label export).")
     kind = corpus_by_step(load_steps())[cur["step"]]["evidence_kind"]
     if kind == "ci" and not any(tok in ev.lower() for tok in ("run", "action", "://", "#", "job")):
@@ -236,6 +236,19 @@ def cmd_apply(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_reopen(args: argparse.Namespace) -> int:
+    state = load_state(args.state)
+    r = _find(state, args.step_n)
+    if r["status"] != "done":
+        sys.exit(f"step {args.step_n} is not done — nothing to reopen")
+    state["log"].append({"date": date.today().isoformat(), "step": args.step_n,
+                         "evidence": "", "note": f"REOPENED (was: {r['evidence']}) {args.reason or ''}"})
+    r["status"], r["evidence"], r["closed"] = "pending", None, None
+    save_state(args.state, state)
+    print(f"step {args.step_n} REOPENED — prior evidence voided, logged")
+    return 0
+
+
 def cmd_audit(args: argparse.Namespace) -> int:
     state = load_state(args.state)
     steps = corpus_by_step(load_steps())
@@ -300,6 +313,8 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--justify"); sp.set_defaults(fn=cmd_na)
     sp = sub.add_parser("apply"); sp.add_argument("step_n", type=int)
     sp.set_defaults(fn=cmd_apply)
+    sp = sub.add_parser("reopen"); sp.add_argument("step_n", type=int)
+    sp.add_argument("--reason"); sp.set_defaults(fn=cmd_reopen)
     args = p.parse_args(argv)
     # argparse global --state must be visible after subparser: re-bind default
     if not hasattr(args, "state"):

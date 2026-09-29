@@ -38,20 +38,20 @@
       "t": "T01",
       "name": "Unit/function floor",
       "disposition": "applied",
-      "status": "done",
+      "status": "pending",
       "trigger_or_justification": null,
-      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/<PASTE-REAL-RUN-ID>",
-      "closed": "2026-09-29"
+      "evidence": null,
+      "closed": null
     },
     {
       "step": 4,
       "t": "T12",
       "name": "Property-based invariants",
       "disposition": "applied",
-      "status": "done",
+      "status": "pending",
       "trigger_or_justification": null,
-      "evidence": "same CI run \u2014 Hypothesis property tests in tests/ (files listed above)",
-      "closed": "2026-09-29"
+      "evidence": null,
+      "closed": null
     },
     {
       "step": 5,
@@ -309,6 +309,18 @@
       "step": 4,
       "evidence": "same CI run \u2014 Hypothesis property tests in tests/ (files listed above)",
       "note": ""
+    },
+    {
+      "date": "2026-09-29",
+      "step": 4,
+      "evidence": "",
+      "note": "REOPENED (was: same CI run \u2014 Hypothesis property tests in tests/ (files listed above)) chained to unverified run reference"
+    },
+    {
+      "date": "2026-09-29",
+      "step": 3,
+      "evidence": "",
+      "note": "REOPENED (was: https://github.com/Rmasood1122/eval-harness/actions/runs/<PASTE-REAL-RUN-ID>) evidence was a literal placeholder"
     }
   ]
 }
