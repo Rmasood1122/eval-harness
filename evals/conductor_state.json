@@ -1,0 +1,302 @@
+{
+  "project": "eval-harness",
+  "archetypes": [
+    "A1"
+  ],
+  "created": "2026-09-28",
+  "week_one": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "t": "T04",
+      "name": "Error analysis on real data",
+      "disposition": "applied",
+      "status": "done",
+      "trigger_or_justification": null,
+      "evidence": "evals/spec/consumer0_eval_spec.json \u2014 16 FMs w/ severities (Meta Architect V2 run, 2026-09-28)",
+      "closed": "2026-09-28"
+    },
+    {
+      "step": 2,
+      "t": "T08",
+      "name": "Golden-set/regression gate",
+      "disposition": "applied",
+      "status": "done",
+      "trigger_or_justification": null,
+      "evidence": "local run: run_suite + promote print DECISION table; registry rows cite FM ids",
+      "closed": "2026-09-28"
+    },
+    {
+      "step": 3,
+      "t": "T01",
+      "name": "Unit/function floor",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 4,
+      "t": "T12",
+      "name": "Property-based invariants",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 5,
+      "t": "T05",
+      "name": "Instrument: prove the gate can BLOCK",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 6,
+      "t": "T03",
+      "name": "Integration round-trips",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 7,
+      "t": "T02",
+      "name": "Component isolation metrics",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 8,
+      "t": "T16",
+      "name": "Retrieval recall@k / MRR",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 9,
+      "t": "T15",
+      "name": "Faithfulness: deterministic form first",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 10,
+      "t": "T19",
+      "name": "Safety/policy: statutory programmatic",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 11,
+      "t": "T11",
+      "name": "Pairwise prompt loop",
+      "disposition": "na",
+      "status": "pending",
+      "trigger_or_justification": "no LLM runtime -> no competing prompt variants",
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 12,
+      "t": "T17",
+      "name": "Determinism proven cross-platform",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 13,
+      "t": "T18",
+      "name": "Performance distributions",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 14,
+      "t": "T13",
+      "name": "Red-team the product",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 15,
+      "t": "T14",
+      "name": "Robustness/perturbation",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 16,
+      "t": "T20",
+      "name": "Security scanners + eval surface",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 17,
+      "t": "T23",
+      "name": "Agentic/long-horizon",
+      "disposition": "na",
+      "status": "pending",
+      "trigger_or_justification": "no autonomous actions: deterministic engine, no LLM at runtime",
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 18,
+      "t": "T09",
+      "name": "Blinded human rubric labels",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 19,
+      "t": "T10",
+      "name": "LLM judge, validated",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 20,
+      "t": "T22",
+      "name": "Fairness strata",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 21,
+      "t": "T24",
+      "name": "Benchmark (filter-only)",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 22,
+      "t": "T06",
+      "name": "Application/fail-closed surface",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 23,
+      "t": "T27",
+      "name": "Meta-eval E-0",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 24,
+      "t": "T26",
+      "name": "Shadow vs incumbent",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 25,
+      "t": "T25",
+      "name": "HITL review auditing",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 26,
+      "t": "T07",
+      "name": "Online eval + flywheel",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    },
+    {
+      "step": 27,
+      "t": "T21",
+      "name": "Calibration vs outcomes",
+      "disposition": "applied",
+      "status": "pending",
+      "trigger_or_justification": null,
+      "evidence": null,
+      "closed": null
+    }
+  ],
+  "doctrine_flags": [],
+  "log": [
+    {
+      "date": "2026-09-28",
+      "step": 1,
+      "evidence": "evals/spec/consumer0_eval_spec.json \u2014 16 FMs w/ severities (Meta Architect V2 run, 2026-09-28)",
+      "note": ""
+    },
+    {
+      "date": "2026-09-28",
+      "step": 2,
+      "evidence": "local run: run_suite + promote print DECISION table; registry rows cite FM ids",
+      "note": ""
+    }
+  ]
+}

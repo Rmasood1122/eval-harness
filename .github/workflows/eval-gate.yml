@@ -1,12 +1,9 @@
 name: eval-gate
-# Any PR touching prompts, pipeline, datasets, or the registry runs the full gate.
+# The product gates itself: every push and PR, no path filter —
+# the gate's own tests changing MUST trigger the gate.
 on:
+  push:
   pull_request:
-    paths:
-      - "prompts/**"
-      - "pipeline/**"
-      - "evals/**"
-
 jobs:
   gate:
     runs-on: ubuntu-latest
@@ -15,13 +12,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - name: L0 unit + property + gate-logic tests (hard block)
+      - run: pip install -r requirements.txt pyyaml
+      - name: L0 unit + property + gate-logic + conductor tests (hard block)
         run: python -m pytest tests/ -q
-      - name: Candidate suite run
+      - name: Candidate suite run (demo pipeline)
         run: python evals/runners/run_suite.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       - name: Gate (baseline vs candidate)
         run: python evals/runners/promote.py
-      # Refresh the committed baseline from main after merges, not from PR branches.
+      - name: Conductor audit (the 27-step ledger gates this repo)
+        run: python conductor/conductor.py audit
