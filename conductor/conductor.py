@@ -166,7 +166,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         sys.exit(f"REFUSED (D8 sequence): current step is {cur['step']} ({cur['name']}); "
                  f"step {args.step} cannot be closed before it. Use defer/na with a reason if it truly does not apply.")
     ev = (args.evidence or "").strip()
-    if not ev:
+    if not ev or "..." in ev or "NNN" in ev or ev.lower() in ("todo", "tbd", "done"):
         sys.exit("REFUSED (D2): evidence or it didn't happen — pass --evidence with the artifact (CI run URL, file path, hash set, label export).")
     kind = corpus_by_step(load_steps())[cur["step"]]["evidence_kind"]
     if kind == "ci" and not any(tok in ev.lower() for tok in ("run", "action", "://", "#", "job")):
