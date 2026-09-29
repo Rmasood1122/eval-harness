@@ -58,10 +58,10 @@
       "t": "T05",
       "name": "Instrument: prove the gate can BLOCK",
       "disposition": "applied",
-      "status": "pending",
+      "status": "done",
       "trigger_or_justification": null,
-      "evidence": null,
-      "closed": null
+      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36561941709",
+      "closed": "2026-09-29"
     },
     {
       "step": 6,
@@ -392,6 +392,12 @@
       "date": "2026-09-29",
       "step": 4,
       "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36559475953 \u2014 Hypothesis properties in tests/test_l0_parsers.py",
+      "note": ""
+    },
+    {
+      "date": "2026-09-29",
+      "step": 5,
+      "evidence": "https://github.com/Rmasood1122/eval-harness/actions/runs/36561941709",
       "note": ""
     }
   ]
