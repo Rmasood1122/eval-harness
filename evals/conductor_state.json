@@ -38,10 +38,10 @@
       "t": "T01",
       "name": "Unit/function floor",
       "disposition": "applied",
-      "status": "pending",
+      "status": "done",
       "trigger_or_justification": null,
-      "evidence": null,
-      "closed": null
+      "evidence": "same run (paste URL again) \u2014 Hypothesis properties in tests/test_l0_parsers.py",
+      "closed": "2026-09-29"
     },
     {
       "step": 4,
@@ -321,6 +321,12 @@
       "step": 3,
       "evidence": "",
       "note": "REOPENED (was: https://github.com/Rmasood1122/eval-harness/actions/runs/<PASTE-REAL-RUN-ID>) evidence was a literal placeholder"
+    },
+    {
+      "date": "2026-09-29",
+      "step": 3,
+      "evidence": "same run (paste URL again) \u2014 Hypothesis properties in tests/test_l0_parsers.py",
+      "note": ""
     }
   ]
 }
