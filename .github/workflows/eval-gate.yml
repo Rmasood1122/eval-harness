@@ -13,6 +13,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt pyyaml
+      - name: IE-06 registry schema lint (hard block)
+        run: python evals/runners/registry_lint.py
       - name: L0 unit + property + gate-logic + conductor tests (hard block)
         run: python -m pytest tests/ -q
       - name: Candidate suite run (demo pipeline)

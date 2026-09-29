@@ -5,10 +5,19 @@ Pure functions so tests/test_l0_gate.py can verify every branch. Rules:
   - hard metric regressing beyond noise band vs baseline -> BLOCK
   - soft metric breach/regression                        -> WARN (human review)
   - monitor_only                                         -> report only
+  - NaN / non-finite / non-numeric score                 -> BLOCK, always (IE-07)
 Band used = max(registry noise_band, measured 2σ from baseline).
+
+Fail-closed rationale (IE-07, FM-02/FM-05): NaN compares False against every
+threshold, so before this rule a NaN score sailed through both the breach and
+the regression checks and PASSed silently. A score that isn't a finite number
+is not a measurement; it blocks regardless of the metric's blocking tier —
+same policy as a metric missing from the candidate run.
 """
 from __future__ import annotations
 
+import math
+import numbers
 from dataclasses import dataclass
 
 
@@ -30,6 +39,11 @@ def judge_metric(spec: dict, candidate: float, base: dict | None) -> Verdict:
     threshold = float(spec["threshold"])
     blocking = spec.get("blocking", "soft")
     band = float(spec.get("noise_band", 0.0))
+    if not math.isfinite(candidate):
+        # IE-07: NaN/inf is an invalid measurement, never a passing one.
+        # Blocks even monitor_only rows — the instrument itself is broken.
+        return Verdict(name, blocking, candidate, None, threshold, band, "BLOCK",
+                       f"non-finite score ({candidate}) — invalid measurement, fail closed")
     base_mean = None
     if base is not None:
         base_mean = float(base["mean"])
@@ -67,6 +81,14 @@ def decide(registry: list[dict], candidate_scores: dict, baseline: dict | None):
                                     "metric missing from candidate run"))
             continue
         base = (baseline or {}).get("metrics", {}).get(name) if baseline else None
-        verdicts.append(judge_metric(spec, float(candidate_scores[name]), base))
+        raw_value = candidate_scores[name]
+        if isinstance(raw_value, bool) or not isinstance(raw_value, numbers.Real):
+            # IE-07: a non-numeric score (str "0.99", null, bool, list…) is not
+            # a measurement, even when it would coerce cleanly — fail closed.
+            verdicts.append(Verdict(name, spec.get("blocking", "soft"), float("nan"),
+                                    None, float(spec["threshold"]), 0.0, "BLOCK",
+                                    f"non-numeric score ({raw_value!r}) — fail closed"))
+            continue
+        verdicts.append(judge_metric(spec, float(raw_value), base))
     decision = "BLOCK" if any(v.status == "BLOCK" for v in verdicts) else "PROMOTE"
     return decision, verdicts

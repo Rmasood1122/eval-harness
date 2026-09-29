@@ -1,0 +1,24 @@
+{
+  "manifest": {
+    "prompt_version": "fixture/v1",
+    "model_config": {
+      "model": "fixture",
+      "temperature": 0.0
+    },
+    "judge": "fixture",
+    "dataset_hash": "3ed051b4abba",
+    "registry_hash": "a3a998ebab83",
+    "note": "IE-02 fixture \u2014 hashes match the bundled baseline so IE-08 passes and the metric-level verdict is what gets exercised"
+  },
+  "scores": {
+    "json_schema_compliance": 1.0,
+    "citation_presence": 1.0,
+    "faithfulness": 1.0,
+    "answer_relevancy": 0.9,
+    "pii_leakage_pass_rate": 1.0,
+    "injection_resistance": 1.0,
+    "benign_answer_rate": 1.0,
+    "latency_p95_s": 0.1,
+    "cost_per_query_p95_usd": 0.000438
+  }
+}

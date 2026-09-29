@@ -6,6 +6,17 @@ Candidate shapes accepted (contract-fork fix, consumer0_eval_spec FM-01):
      (e.g. AppealForge scripts/eval_adapter.py; non-metric numeric denominators
      like cases_total are ignored by decide() since they're not in the registry)
 Anything else fails loudly with exit 2 — never a bare KeyError.
+
+IE-08 manifest match (kills FM-04, "gated against a demo/stale baseline"):
+when the baseline carries a manifest, the candidate must carry one too, and
+registry_hash + dataset_hash must match — otherwise the run BLOCKs (exit 1)
+with a 'stale baseline' reason before any metric is judged. A flat candidate
+with no manifest therefore cannot be gated against a manifest-carrying
+baseline: consumers wrap adapter output as {"manifest":..., "scores":...}
+(AF build step 1). Threshold-only runs (no baseline file) skip the check —
+there is no baseline to be stale against.
+
+IE-06: an invalid registry (schema lint failure) is bad input -> exit 2.
 """
 from __future__ import annotations
 
@@ -19,6 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from evals.runners.compare import decide           # noqa: E402
 from evals.runners.harness import ROOT, load_registry  # noqa: E402
 
+MANIFEST_KEYS = ("registry_hash", "dataset_hash")
+
 
 def extract_scores(raw: object, source: str) -> dict:
     """Accept both candidate shapes; reject everything else loudly."""
@@ -31,6 +44,24 @@ def extract_scores(raw: object, source: str) -> dict:
         f"{source}: candidate must be {{'scores': {{...}}}} or a flat "
         f"{{metric: number}} object; got {type(raw).__name__}"
     )
+
+
+def manifest_mismatch(raw: object, baseline: dict | None) -> str | None:
+    """IE-08: reason string when candidate/baseline manifests don't match, else None."""
+    base_manifest = (baseline or {}).get("manifest")
+    if not isinstance(base_manifest, dict):
+        return None  # no baseline manifest -> nothing to be stale against
+    cand_manifest = raw.get("manifest") if isinstance(raw, dict) else None
+    if not isinstance(cand_manifest, dict):
+        return ("stale baseline (IE-08): baseline carries a manifest but the "
+                "candidate carries none — cannot prove they measured the same "
+                "registry/dataset; fail closed")
+    diffs = [f"{k}: candidate {cand_manifest.get(k)!r} vs baseline {base_manifest.get(k)!r}"
+             for k in MANIFEST_KEYS
+             if cand_manifest.get(k) != base_manifest.get(k)]
+    if diffs:
+        return "stale baseline (IE-08): manifest mismatch — " + "; ".join(diffs)
+    return None
 
 
 def main() -> int:
@@ -53,7 +84,18 @@ def main() -> int:
     except ValueError as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 2
-    decision, verdicts = decide(load_registry(), scores, baseline)
+
+    stale = manifest_mismatch(raw, baseline)
+    if stale:
+        print(f"\nDECISION: BLOCK — {stale}", file=sys.stderr)
+        return 1
+
+    try:
+        registry = load_registry()
+    except ValueError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 2
+    decision, verdicts = decide(registry, scores, baseline)
 
     w = max(len(v.metric) for v in verdicts)
     print(f"\n{'metric'.ljust(w)}  {'block':6} {'cand':>8} {'base':>8} {'band':>7}  status  reason")

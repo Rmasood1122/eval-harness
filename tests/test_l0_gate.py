@@ -67,3 +67,43 @@ def test_decide_aggregates_any_block():
     assert decision == "BLOCK"
     decision, _ = decide([SOFT_HIGHER], {"m": 0.85}, None)
     assert decision == "PROMOTE"  # soft warn alone never blocks
+
+
+# --- IE-07: invalid measurements fail closed --------------------------------
+# NaN compares False against every threshold, so before the non-finite guard a
+# NaN score PASSed both the breach and regression checks silently (FM-02/FM-05).
+
+def test_nan_score_blocks_hard():
+    v = judge_metric(HARD_HIGHER, float("nan"), base(0.95))
+    assert v.status == "BLOCK"
+    assert "non-finite" in v.reason
+
+
+def test_nan_score_blocks_even_soft_and_monitor_only():
+    assert judge_metric(SOFT_HIGHER, float("nan"), base(0.95)).status == "BLOCK"
+    monitor = {**HARD_HIGHER, "blocking": "monitor_only"}
+    assert judge_metric(monitor, float("nan"), base(0.95)).status == "BLOCK"
+
+
+def test_nan_score_blocks_without_baseline():
+    assert judge_metric(HARD_HIGHER, float("nan"), None).status == "BLOCK"
+
+
+def test_inf_score_blocks_both_directions():
+    # +inf would "pass" a higher_better threshold; -inf a lower_better one.
+    assert judge_metric(HARD_HIGHER, float("inf"), base(0.95)).status == "BLOCK"
+    assert judge_metric(HARD_LOWER, float("-inf"), base(1.5, 0.1)).status == "BLOCK"
+
+
+def test_non_numeric_score_blocks_in_decide():
+    for bad in ("0.99", None, True, [0.99]):
+        decision, verdicts = decide([HARD_HIGHER], {"m": bad}, None)
+        assert decision == "BLOCK", f"{bad!r} must fail closed"
+        assert "non-numeric" in verdicts[0].reason
+
+
+def test_nan_in_decide_blocks_whole_run():
+    decision, verdicts = decide([HARD_HIGHER, HARD_LOWER],
+                                {"m": float("nan"), "lat": 1.5}, None)
+    assert decision == "BLOCK"
+    assert verdicts[0].status == "BLOCK" and verdicts[1].status == "PASS"

@@ -26,7 +26,13 @@ def load_jsonl(path: Path) -> list[dict]:
 
 
 def load_registry() -> list[dict]:
-    return yaml.safe_load(REGISTRY.read_text())
+    rows = yaml.safe_load(REGISTRY.read_text())
+    # IE-06 fail-closed: an invalid registry refuses to gate anything.
+    from evals.runners.registry_lint import lint_registry
+    errors = lint_registry(rows)
+    if errors:
+        raise ValueError("IE-06 registry lint failed:\n  - " + "\n  - ".join(errors))
+    return rows
 
 
 def _file_hash(*paths: Path) -> str:
