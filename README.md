@@ -88,12 +88,30 @@ evals/
   runners/
     harness.py                  # loads registry+datasets, runs pipeline, scores, manifests
     registry_lint.py            # IE-06 schema lint (fail-closed)
+    registry_diff_lint.py       # IE-06b: gate-weakening diffs block without a written justification
+    theater_audit.py            # eval-theater-audit: 8 defect classes, each found live in a real repo
+    candidate_conformance.py    # strict candidate/v2 contract check for adapter authors
     compare.py  promote.py      # gate logic; NaN->BLOCK; manifest match
     baseline.py  run_suite.py  metrics_impl.py  judge.py
   online/                       # non-blocking tracing + PII masking; stratified sampling poller
-tests/                          # 96 L0 tests: parsers, PII, gate branches, fixtures, conductor
-docs/                           # the method: playbook, 27-step toolmap, architect prompts
+tests/                          # 146 L0 tests: parsers, PII, gate branches, fixtures, conductor, auditor
+docs/                           # the method: playbook, 27-step toolmap, architect prompts, adapter recipes
 ```
+
+## Audit any repo for eval theater
+
+```
+python evals/runners/theater_audit.py /path/to/repo
+```
+
+Eight detector classes — piped gating exit codes, `|| true` swallows, audit
+scripts that cannot fail, scheduled-only batteries, hard gates never proven
+to BLOCK, gating without a baseline, claimed results over TODO stubs, test
+suites that never run in CI. Every class was found live in a production
+repository during the 2026-09-29 five-consumer rollout before it became a
+detector; findings carry file:line evidence and a confidence label. Exit 0
+means "none of these patterns found", never "no eval theater" — the audit
+says so itself.
 
 ## Adopting on a real project
 
